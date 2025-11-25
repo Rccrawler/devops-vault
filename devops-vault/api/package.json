@@ -1,0 +1,23 @@
+{
+  "name": "presign-api",
+  "version": "1.0.0",
+  "main": "dist/main.js",
+  "scripts": {
+    "start": "ts-node -r tsconfig-paths/register src/main.ts",
+    "build": "tsc",
+    "start:prod": "node dist/main.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.400.0",
+    "@aws-sdk/s3-request-presigner": "^3.400.0",
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/platform-express": "^10.0.0",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.0.0"
+  },
+  "devDependencies": {
+    "ts-node": "^10.0.0",
+    "typescript": "^5.0.0"
+  }
+}

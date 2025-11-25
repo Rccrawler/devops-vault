@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    environment:
+      - MINIO_ROOT_USER=minio
+      - MINIO_ROOT_PASSWORD=minio123
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Console
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: ./api
+    container_name: presign-api
+    environment:
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_REGION=us-east-1
+      - MINIO_ACCESS_KEY=minio
+      - MINIO_SECRET_KEY=minio123
+      - BUCKET=uploads
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - minio
+
+  backup:
+    image: minio/mc
+    container_name: minio-backup
+    entrypoint: >
+      /bin/sh -c "
+      mc config host add local http://minio:9000 minio minio123 &&
+      mkdir -p /backups/uploads &&
+      while true; do
+        mc mirror --overwrite --remove local/uploads /backups/uploads || true;
+        sleep 3600;
+      done"
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      - minio
+
+volumes:
+  minio_data:
